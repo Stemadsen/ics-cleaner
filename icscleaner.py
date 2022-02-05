@@ -1,42 +1,36 @@
 #!/usr/bin/env python3
 
-# This script removes duplicate events from an iCal file.
-# To use it run:
-# python3 icscleaner.py SOURCE_FILE.ics DESTINATION_FILE.ics
-
 import sys
 
 input_file = open(sys.argv[1])
 output_file = open(sys.argv[2], 'w')
 
-the_text = input_file.readlines() # all text from input file
+input_lines = input_file.readlines()
 
-the_dict = {}
-temp, eventid, header = "", "", ""
+events = {}
+temp_event, event_id, header = '', '', ''
 
-
-for line in the_text:
+for line in input_lines:
     if 'BEGIN:VEVENT' in line:
         break
     else:
         header += line
 
-for line in the_text:
+for line in input_lines:
     if 'BEGIN:VEVENT' in line:
-        temp = ""
-        temp = line
-    elif 'END:VEVENT' in line:
-        temp += line.rstrip()
-        the_dict[eventid] = temp
+        temp_event = line
     elif 'DTSTART' in line:
-        temp += line
-        eventid = line
+        temp_event += line
+        event_id = line  # Note: Overwrites any previous event with the same DTSTART
+    elif 'END:VEVENT' in line:
+        temp_event += line.rstrip()
+        events[event_id] = temp_event
     else:
-        temp += line
+        temp_event += line
 
-output_file.write(header[:-1]) # -1 for remove new line
+output_file.write(header[:-1])
 
-for line in the_dict.values():
+for line in events.values():
     output_file.write(line)
 
 output_file.write('END:VCALENDAR')
